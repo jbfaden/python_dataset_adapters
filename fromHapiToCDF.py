@@ -94,7 +94,8 @@ def my_hapitime_format_str(isotime):
         else:
             raise Exception("time cannot have %d characters: %s" % (datelen, isotime))
 
-    return "{}T{}{}" .format( form, timeform, zstr )
+    return "{}T{}{}".format(form, timeform, zstr)
+
 
 def convertTimes(isotimeArray):
     """
@@ -110,7 +111,7 @@ def convertTimes(isotimeArray):
         a datetime object for each element
     """
     form = my_hapitime_format_str(isotimeArray[0])
-    return [datetime.datetime.strptime(i1.decode(), form) for i1 in isotimeArray]
+    return [datetime.datetime.strptime(i1.decode('ascii'), form) for i1 in isotimeArray]
 
 
 # this goes away to avoid dependence.  Jon V says CDFFactory.fromHapi()
@@ -142,28 +143,24 @@ def toCDF(hapidata, cdfname):
 
     """
 
-    filename = cdfname
+    data, meta = hapidata
 
-    vars = [m['name'] for m in meta['parameters']]
+    names = [m['name'] for m in meta['parameters']]
 
-    for i in range(len(vars)):
-        name = vars[i]
-        print(name)
+    cdf = spacepy.pycdf.CDF(cdfname, create=True)
+
+    for i in range(len(names)):
+        name = names[i]
         m = meta['parameters'][i]
-        print(m)
         if i == 0:
             cdf[name] = convertTimes(data[m['name']])
             cdf[name].attrs['VAR_TYPE'] = 'support_data'
         else:
             cdf[name] = data[name]
             v = cdf[name]
-            if m['units'] is not None:
-                v.attrs['UNITS'] = m['units']
-            else:
-                v.attrs['UNITS'] = ' '
+            v.attrs['UNITS'] = ' ' if m['units'] is None else m['units']
             v.attrs['DEPEND_0'] = meta['parameters'][0]['name']
             v.attrs['VAR_TYPE'] = 'data'
-            if m
 
         if 'description' in m:
             cdf[name].attrs['CATDESC'] = m['description']
@@ -172,7 +169,12 @@ def toCDF(hapidata, cdfname):
 
     cdf.close()
 
-    print('wrote ' + os.getcwd() + '/' + filename)
+filename = '/tmp/fromHapiToCDF.cdf'
+if os.path.exists(filename):
+    os.remove(filename)
 
+opts = {'logging': True}
+hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+toCDF(hapidata, filename)
 
-toCDF(server, dataset, parameters, start, stop, '/tmp/fromHapiToCDF.cdf')
+print( 'wrote {}'.format(filename) )
