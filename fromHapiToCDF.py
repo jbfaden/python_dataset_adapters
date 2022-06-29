@@ -33,7 +33,18 @@ parameters = ''
 # https://github.com/spacepy/spacepy/issues/523
 
 def my_hapitime_format_str(isotime):
-    isotime = isotime.decode()
+    """
+    Parameters
+    ----------
+    isotime : str
+        a HAPI isotime
+
+    Return
+    ------
+    str
+        a format string for datetime.datetime.strptime
+    """
+    isotime = isotime.decode('ascii')
 
     if isotime[-1] == 'Z':
         isotime = isotime[0:-1]
@@ -83,15 +94,30 @@ def my_hapitime_format_str(isotime):
         else:
             raise Exception("time cannot have %d characters: %s" % (datelen, isotime))
 
+    return "{}T{}{}" .format( form, timeform, zstr )
 
 def convertTimes(isotimeArray):
+    """
+    Convert the times in the array of isotimes into datetime objects.
+     Parameters
+    ----------
+    isotimeArray : array of str
+        each element a HAPI isotime
+
+    Return
+    ------
+    array of str
+        a datetime object for each element
+    """
     form = my_hapitime_format_str(isotimeArray[0])
     return [datetime.datetime.strptime(i1.decode(), form) for i1 in isotimeArray]
 
 
 # this goes away to avoid dependence.  Jon V says CDFFactory.fromHapi()
 def toCDF(server, dataset, parameters, start, stop, cdfname):
-    '''Convenient method for reading from HAPI server into CDF file.  This will probably go away.'''
+    """
+    Convenient method for reading from HAPI server into CDF file.  This will probably go away.
+    """
     opts = {'logging': True}
     hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
     toCDF(hapidata, cdfname)
