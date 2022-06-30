@@ -1,5 +1,6 @@
 import os.path
 import datetime
+import re
 
 import spacepy.pycdf
 import hapiclient
@@ -97,10 +98,14 @@ def convert_times(isotime_array):
     array of str
         a datetime object for each element
     """
+    if len(isotime_array) == 0:
+        print('isotime_array has len 0')
+        return isotime_array  # raise ValueError('isotime array is empty')
     form = calculate_format_str(isotime_array[0].decode('ascii'))
     return [datetime.datetime.strptime(isotime.decode('ascii'), form) for isotime in isotime_array]
 
-def handle_bins( cdf, name, bins ):
+
+def handle_bins(cdf, name, bins):
     """
     Add non-time-varying bins variable
 
@@ -114,12 +119,32 @@ def handle_bins( cdf, name, bins ):
         the "bins" node of the HAPI response
     """
     if 'centers' in bins:
-        vv = [ float(v) for v in bins['centers'] ]
+        centers = [float(v) for v in bins['centers']]
+    elif 'ranges' in bins:
+        ranges = bins['ranges']
     else:
         raise Exception('Not supported')
 
-    cdf[name] = vv
+    if 'centers' not in locals():
+        centers = [a[0] + (a[1] - a[0]) / 2 for a in ranges]
+
+    cdf[name] = centers
     cdf[name].attrs['UNITS'] = bins['units']
+    cdf[name].attrs['VAR_TYPE'] = 'support_data'
+
+    if 'ranges' in locals():
+        import numpy
+        delta_plus_var = numpy.zeros(len(centers))
+        for i in range(len(centers)):
+            delta_plus_var[i] = ranges[i][1] - centers[i]
+        delta_minus_var = numpy.zeros(len(centers))
+        for i in range(len(centers)):
+            delta_minus_var[i] = centers[i] - ranges[i][0]
+        cdf[name + 'DeltaMinus'] = delta_minus_var
+        cdf[name + 'DeltaPlus'] = delta_plus_var
+        cdf[name].attrs['DELTA_PLUS_VAR'] = name + 'DeltaPlus'
+        cdf[name].attrs['DELTA_MINUS_VAR'] = name + 'DeltaMinus'
+
 
 # this goes away to avoid dependence.  Jon V says CDFFactory.fromHapi()
 def to_CDF(server, dataset, parameters, start, stop, cdfname):
@@ -168,8 +193,13 @@ def to_CDF(hapidata, cdfname):
             if 'bins' in m:
                 bins = m['bins']
                 idep = 1
+                if isinstance(bins, dict):
+                    refstr = bins.get('$ref')
+                    ref = re.match('\#\/definitions\/(.+)', refstr).group(1)
+                    bins = meta['definitions'][ref]
+
                 for b in bins:
-                    handle_bins( cdf, b['name'], b )
+                    handle_bins(cdf, b['name'], b)
                     v.attrs['DEPEND_%d' % idep] = b['name']
                     idep = idep + 1
             v.attrs['UNITS'] = ' ' if m['units'] is None else m['units']
@@ -200,30 +230,62 @@ stop = '2022-06-28T00:00:00.000Z'
 parameters = 'Temperature,WindSpeed'
 '''
 
+'''
 # https://jfaden.net/HapiServerDemo/hapi/info?id=Spectrum
 server = 'https://jfaden.net/HapiServerDemo/hapi'
 dataset = 'Spectrum'
 start = '2016-01-01T00:00:00.000Z'
 stop = '2016-01-01T03:00:00.000Z'
 parameters = ''
+'''
 
-print( calculate_format_str('2000') )
-print( calculate_format_str('2000003') )
-print( calculate_format_str('2000-003') )
-print( calculate_format_str('20001203') )
-print( calculate_format_str('2000-12-03') )
-print( calculate_format_str('2000-12-03Z') )
-print( calculate_format_str('2000-12-03T04') )
-print( calculate_format_str('2000-12-03T04Z') )
-print( calculate_format_str('2000-12-03T0405') )
-print( calculate_format_str('2000-12-03T0405Z') )
-print( calculate_format_str('2000-12-03T040506') )
-print( calculate_format_str('2000-12-03T03:04:05') )
-print( calculate_format_str('2000-12-03T04:05:06.007') )
-print( calculate_format_str('2000-12-03T04:05:06.007008') )
+'''
+# https://jfaden.net/HapiServerDemo/hapi/info?id=SpectrogramRank2
+# rank 2 spectrogram must be sliced to view
+server = 'https://jfaden.net/HapiServerDemo/hapi'
+dataset = 'SpectrogramRank2'
+start = '2014-01-09T00:00:00.000Z'
+stop = '2014-01-10T00:00:00.000Z'
+parameters = ''
+'''
+
+# '''
+# https://jfaden.net/HapiServerDemo/hapi/info?id=specBins.ref
+# uses common reference to the bins object
+server = 'https://jfaden.net/HapiServerDemo/hapi'
+dataset = 'specBins.ref'
+start = '2016-001T00:00:00.000Z'
+stop = '2016-001T24:00:00.000Z'
+parameters = ''
+# '''
+
+'''
+print(calculate_format_str('2000'))
+print(calculate_format_str('2000003'))
+print(calculate_format_str('2000-003'))
+print(calculate_format_str('20001203'))
+print(calculate_format_str('2000-12-03'))
+print(calculate_format_str('2000-12-03Z'))
+print(calculate_format_str('2000-12-03T04'))
+print(calculate_format_str('2000-12-03T04Z'))
+print(calculate_format_str('2000-12-03T0405'))
+print(calculate_format_str('2000-12-03T0405Z'))
+print(calculate_format_str('2000-12-03T040506'))
+print(calculate_format_str('2000-12-03T03:04:05'))
+print(calculate_format_str('2000-12-03T04:05:06.007'))
+print(calculate_format_str('2000-12-03T04:05:06.007008'))
+'''
+
+#import hapiclient.hapitime
+#print( hapiclient.hapitime.hapitime_format_str('2004') )
+#print( hapiclient.hapitime.hapitime_format_str('2004-140T03:04') )
+
+# cdf = spacepy.pycdf.CDF(cdfname, create=True)
+# print(cdf)
 
 filename = '/tmp/fromHapiToCDF.cdf'
 if os.path.exists(filename):
+    print('deleting {}'.format(filename))
     os.remove(filename)
 
 opts = {'logging': True}
