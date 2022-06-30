@@ -83,7 +83,7 @@ def calculate_format_str(isotime):
         return "{}T{}{}".format(form, timeform, zstr)
 
 
-def convertTimes(isotimeArray):
+def convert_times(isotime_array):
     """
     Convert the times in the array of isotimes into datetime objects.
      Parameters
@@ -96,21 +96,21 @@ def convertTimes(isotimeArray):
     array of str
         a datetime object for each element
     """
-    form = calculate_format_str(isotimeArray[0].decode('ascii'))
-    return [datetime.datetime.strptime(isotime.decode('ascii'), form) for isotime in isotimeArray]
+    form = calculate_format_str(isotime_array[0].decode('ascii'))
+    return [datetime.datetime.strptime(isotime.decode('ascii'), form) for isotime in isotime_array]
 
 
 # this goes away to avoid dependence.  Jon V says CDFFactory.fromHapi()
-def toCDF(server, dataset, parameters, start, stop, cdfname):
+def to_CDF(server, dataset, parameters, start, stop, cdfname):
     """
     Convenient method for reading from HAPI server into CDF file.  This will probably go away.
     """
     opts = {'logging': True}
     hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
-    toCDF(hapidata, cdfname)
+    to_CDF(hapidata, cdfname)
 
 
-def toCDF(hapidata, cdfname):
+def to_CDF(hapidata, cdfname):
     """Reformat the response from the Python hapiclient to the CDF.
 
     This is typically called using the result of the Python hapiclient.
@@ -139,7 +139,7 @@ def toCDF(hapidata, cdfname):
         name = names[i]
         m = meta['parameters'][i]
         if i == 0:
-            cdf[name] = convertTimes(data[m['name']])
+            cdf[name] = convert_times(data[m['name']])
             cdf[name].attrs['VAR_TYPE'] = 'support_data'
         else:
             cdf[name] = data[name]
@@ -200,6 +200,6 @@ if os.path.exists(filename):
 
 opts = {'logging': True}
 hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
-toCDF(hapidata, filename)
+to_CDF(hapidata, filename)
 
 print('wrote {}'.format(filename))
