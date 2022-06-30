@@ -93,7 +93,7 @@ def convertTimes(isotimeArray):
         a datetime object for each element
     """
     form = my_hapitime_format_str(isotimeArray[0])
-    return [datetime.datetime.strptime(i1.decode('ascii'), form) for i1 in isotimeArray]
+    return [datetime.datetime.strptime(isotime.decode('ascii'), form) for isotime in isotimeArray]
 
 
 # this goes away to avoid dependence.  Jon V says CDFFactory.fromHapi()
@@ -151,11 +151,13 @@ def toCDF(hapidata, cdfname):
 
     cdf.close()
 
+'''
 server = 'https://cdaweb.gsfc.nasa.gov/hapi'
 dataset = 'OMNI2_H0_MRG1HR'
 start = '2003-09-01T00:00:00'
 stop = '2003-12-01T00:00:00'
 parameters = 'KP1800,DST1800'
+'''
 
 server = 'https://jfaden.net/HapiServerDemo/hapi'
 dataset = 'Iowa City Conditions'
