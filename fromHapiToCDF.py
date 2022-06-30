@@ -4,26 +4,6 @@ import datetime
 import spacepy.pycdf
 import hapiclient
 
-server = 'https://cdaweb.gsfc.nasa.gov/hapi'
-dataset = 'OMNI2_H0_MRG1HR'
-start = '2003-09-01T00:00:00'
-stop = '2003-12-01T00:00:00'
-parameters = 'KP1800,DST1800'
-
-server = 'https://jfaden.net/HapiServerDemo/hapi'
-dataset = 'Iowa City Conditions'
-start = '2022-06-27T00:00:00.000Z'
-stop = '2022-06-28T00:00:00.000Z'
-parameters = 'Temperature,WindSpeed'
-
-# https://jfaden.net/HapiServerDemo/hapi/info?id=Spectrum
-server = 'https://jfaden.net/HapiServerDemo/hapi'
-dataset = 'Spectrum'
-start = '2016-01-01T00:00:00.000Z'
-stop = '2016-01-02T00:00:00.000Z'
-parameters = ''
-
-
 # frompyfunc
 # numpy.vectorize
 # ticktock
@@ -34,6 +14,9 @@ parameters = ''
 
 def my_hapitime_format_str(isotime):
     """
+    Given an example time, return the format string which used with datetime.datetime.strptime
+    will parse the isotime strings to datetimes.
+
     Parameters
     ----------
     isotime : str
@@ -76,21 +59,20 @@ def my_hapitime_format_str(isotime):
         raise Exception('date cannot have %d characters: %s' % (datelen, isotime))
 
     timelen = len(isotime) - datelen - 1
-    if timelen == 0 or timelen == -1:
-        return form
-    else:
+    timeform = ""
+    if timelen > 0:
         if timelen == 2:
-            return form + 'T%H' + zstr
+            timeform = '%H'
         elif timelen == 4:
-            return form + 'T%H%M' + zstr
+            timeform = '%H%M'
         elif timelen == 5:
-            return form + 'T%H:%M' + zstr
+            timeform = '%H:%M'
         elif timelen == 6:
-            return form + 'T%H%M%S' + zstr
+            timeform = '%H%M%S'
         elif timelen == 8:
-            return form + 'T%H:%M:%S' + zstr
+            timeform = '%H:%M:%S'
         elif timelen > 10:
-            return form + 'T%H:%M:%S.%f' + zstr
+            timeform = "%H:%M:%S.%f"
         else:
             raise Exception("time cannot have %d characters: %s" % (datelen, isotime))
 
@@ -169,6 +151,27 @@ def toCDF(hapidata, cdfname):
 
     cdf.close()
 
+server = 'https://cdaweb.gsfc.nasa.gov/hapi'
+dataset = 'OMNI2_H0_MRG1HR'
+start = '2003-09-01T00:00:00'
+stop = '2003-12-01T00:00:00'
+parameters = 'KP1800,DST1800'
+
+server = 'https://jfaden.net/HapiServerDemo/hapi'
+dataset = 'Iowa City Conditions'
+start = '2022-06-20T00:00:00.000Z'
+stop = '2022-06-28T00:00:00.000Z'
+parameters = 'Temperature,WindSpeed'
+
+'''
+# https://jfaden.net/HapiServerDemo/hapi/info?id=Spectrum
+server = 'https://jfaden.net/HapiServerDemo/hapi'
+dataset = 'Spectrum'
+start = '2016-01-01T00:00:00.000Z'
+stop = '2016-01-02T00:00:00.000Z'
+parameters = ''
+'''
+
 filename = '/tmp/fromHapiToCDF.cdf'
 if os.path.exists(filename):
     os.remove(filename)
@@ -177,4 +180,4 @@ opts = {'logging': True}
 hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
 toCDF(hapidata, filename)
 
-print( 'wrote {}'.format(filename) )
+print('wrote {}'.format(filename))
