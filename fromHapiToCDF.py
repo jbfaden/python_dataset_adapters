@@ -13,7 +13,7 @@ import hapiclient
 # { x(i) : for i in iis } dictionary comprehension
 # https://github.com/spacepy/spacepy/issues/523
 
-def my_hapitime_format_str(isotime):
+def calculate_format_str(isotime):
     """
     Given an example time, return the format string which used with datetime.datetime.strptime
     will parse the isotime strings to datetimes.
@@ -98,7 +98,7 @@ def convertTimes(isotimeArray):
     array of str
         a datetime object for each element
     """
-    form = my_hapitime_format_str(isotimeArray[0])
+    form = calculate_format_str(isotimeArray[0])
     return [datetime.datetime.strptime(isotime.decode('ascii'), form) for isotime in isotimeArray]
 
 
