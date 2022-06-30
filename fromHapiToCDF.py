@@ -4,6 +4,7 @@ import datetime
 import spacepy.pycdf
 import hapiclient
 
+
 # frompyfunc
 # numpy.vectorize
 # ticktock
@@ -58,25 +59,35 @@ def my_hapitime_format_str(isotime):
     else:
         raise Exception('date cannot have %d characters: %s' % (datelen, isotime))
 
-    timelen = len(isotime) - datelen - 1
-    timeform = ""
-    if timelen > 0:
-        if timelen == 2:
-            timeform = '%H'
-        elif timelen == 4:
-            timeform = '%H%M'
-        elif timelen == 5:
-            timeform = '%H:%M'
-        elif timelen == 6:
-            timeform = '%H%M%S'
-        elif timelen == 8:
-            timeform = '%H:%M:%S'
-        elif timelen > 10:
-            timeform = "%H:%M:%S.%f"
-        else:
-            raise Exception("time cannot have %d characters: %s" % (datelen, isotime))
+    badlen = 'x'  # marker for bad length parameter
 
-    return "{}T{}{}".format(form, timeform, zstr)
+    formForLength = {
+        1: badlen,
+        2: "%H",
+        3: badlen,
+        4: '%H%M',
+        5: '%H:%M',
+        6: '%H%M%S',
+        7: badlen,
+        8: '%H:%M:%S',
+        9: badlen
+    }
+
+    timelen = len(isotime) - datelen - 1
+
+    if timelen > 9:
+        timeform = "%H:%M:%S.%f"
+    elif timelen < 1:
+        timeform = ""
+    else:
+        timeform = formForLength[timelen]
+
+    if len(timeform) == 0:
+        return "{}{}".format(form, zstr)
+    elif timeform == badlen:
+        raise Exception("time cannot have %d characters: %s" % (datelen, isotime))
+    else:
+        return "{}T{}{}".format(form, timeform, zstr)
 
 
 def convertTimes(isotimeArray):
@@ -150,6 +161,7 @@ def toCDF(hapidata, cdfname):
     cdf.attrs['CreateDate'] = datetime.datetime.now()
 
     cdf.close()
+
 
 '''
 server = 'https://cdaweb.gsfc.nasa.gov/hapi'
