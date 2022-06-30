@@ -59,18 +59,13 @@ def my_hapitime_format_str(isotime):
     else:
         raise Exception('date cannot have %d characters: %s' % (datelen, isotime))
 
-    badlen = 'x'  # marker for bad length parameter
-
     formForLength = {
-        1: badlen,
         2: "%H",
-        3: badlen,
         4: '%H%M',
         5: '%H:%M',
         6: '%H%M%S',
-        7: badlen,
-        8: '%H:%M:%S',
-        9: badlen
+        8: '%H:%M:%S'
+        # note case for 10 and up below
     }
 
     timelen = len(isotime) - datelen - 1
@@ -82,10 +77,10 @@ def my_hapitime_format_str(isotime):
     else:
         timeform = formForLength[timelen]
 
-    if len(timeform) == 0:
+    if timeform is None:
+        raise ValueError("time cannot have {:d} characters: {:s}".format(datelen, isotime))
+    elif len(timeform) == 0:
         return "{}{}".format(form, zstr)
-    elif timeform == badlen:
-        raise Exception("time cannot have %d characters: %s" % (datelen, isotime))
     else:
         return "{}T{}{}".format(form, timeform, zstr)
 
