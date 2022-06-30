@@ -28,8 +28,6 @@ def calculate_format_str(isotime):
     str
         a format string for datetime.datetime.strptime
     """
-    isotime = isotime.decode('ascii')
-
     if isotime[-1] == 'Z':
         isotime = isotime[0:-1]
         zstr = 'Z'
@@ -57,7 +55,7 @@ def calculate_format_str(isotime):
     elif datelen == 10:
         form = '%Y-%m-%d'
     else:
-        raise Exception('date cannot have %d characters: %s' % (datelen, isotime))
+        raise ValueError('date cannot have %d characters: %s' % (datelen, isotime))
 
     formForLength = {
         2: "%H",
@@ -98,7 +96,7 @@ def convertTimes(isotimeArray):
     array of str
         a datetime object for each element
     """
-    form = calculate_format_str(isotimeArray[0])
+    form = calculate_format_str(isotimeArray[0].decode('ascii'))
     return [datetime.datetime.strptime(isotime.decode('ascii'), form) for isotime in isotimeArray]
 
 
@@ -180,6 +178,21 @@ start = '2016-01-01T00:00:00.000Z'
 stop = '2016-01-02T00:00:00.000Z'
 parameters = ''
 '''
+
+print( calculate_format_str('2000') )
+print( calculate_format_str('2000003') )
+print( calculate_format_str('2000-003') )
+print( calculate_format_str('20001203') )
+print( calculate_format_str('2000-12-03') )
+print( calculate_format_str('2000-12-03Z') )
+print( calculate_format_str('2000-12-03T04') )
+print( calculate_format_str('2000-12-03T04Z') )
+print( calculate_format_str('2000-12-03T0405') )
+print( calculate_format_str('2000-12-03T0405Z') )
+print( calculate_format_str('2000-12-03T040506') )
+print( calculate_format_str('2000-12-03T03:04:05') )
+print( calculate_format_str('2000-12-03T04:05:06.007') )
+print( calculate_format_str('2000-12-03T04:05:06.007008') )
 
 filename = '/tmp/fromHapiToCDF.cdf'
 if os.path.exists(filename):
