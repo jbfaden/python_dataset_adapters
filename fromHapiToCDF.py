@@ -86,7 +86,8 @@ def calculate_format_str(isotime):
 def convert_times(isotime_array):
     """
     Convert the times in the array of isotimes into datetime objects.
-     Parameters
+
+    Parameters
     ----------
     isotimeArray : array of str
         each element a HAPI isotime
@@ -99,6 +100,26 @@ def convert_times(isotime_array):
     form = calculate_format_str(isotime_array[0].decode('ascii'))
     return [datetime.datetime.strptime(isotime.decode('ascii'), form) for isotime in isotime_array]
 
+def handle_bins( cdf, name, bins ):
+    """
+    Add non-time-varying bins variable
+
+    Parameters
+    ----------
+    cdf : CDF
+        the cdf to add the variable
+    name : str
+        the name of the variable
+    bins : str
+        the "bins" node of the HAPI response
+    """
+    if 'centers' in bins:
+        vv = [ float(v) for v in bins['centers'] ]
+    else:
+        raise Exception('Not supported')
+
+    cdf[name] = vv
+    cdf[name].attrs['UNITS'] = bins['units']
 
 # this goes away to avoid dependence.  Jon V says CDFFactory.fromHapi()
 def to_CDF(server, dataset, parameters, start, stop, cdfname):
@@ -144,6 +165,13 @@ def to_CDF(hapidata, cdfname):
         else:
             cdf[name] = data[name]
             v = cdf[name]
+            if 'bins' in m:
+                bins = m['bins']
+                idep = 1
+                for b in bins:
+                    handle_bins( cdf, b['name'], b )
+                    v.attrs['DEPEND_%d' % idep] = b['name']
+                    idep = idep + 1
             v.attrs['UNITS'] = ' ' if m['units'] is None else m['units']
             v.attrs['DEPEND_0'] = meta['parameters'][0]['name']
             v.attrs['VAR_TYPE'] = 'data'
@@ -164,20 +192,20 @@ stop = '2003-12-01T00:00:00'
 parameters = 'KP1800,DST1800'
 '''
 
+'''
 server = 'https://jfaden.net/HapiServerDemo/hapi'
 dataset = 'Iowa City Conditions'
 start = '2022-06-20T00:00:00.000Z'
 stop = '2022-06-28T00:00:00.000Z'
 parameters = 'Temperature,WindSpeed'
-
 '''
+
 # https://jfaden.net/HapiServerDemo/hapi/info?id=Spectrum
 server = 'https://jfaden.net/HapiServerDemo/hapi'
 dataset = 'Spectrum'
 start = '2016-01-01T00:00:00.000Z'
-stop = '2016-01-02T00:00:00.000Z'
+stop = '2016-01-01T03:00:00.000Z'
 parameters = ''
-'''
 
 print( calculate_format_str('2000') )
 print( calculate_format_str('2000003') )
