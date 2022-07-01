@@ -199,6 +199,7 @@ def to_CDF(hapidata, cdfname):
                     bins = meta['definitions'][ref]
 
                 for b in bins:
+                    # TODO: figure out why this works when multiple variables use the same bins.
                     handle_bins(cdf, b['name'], b)
                     v.attrs['DEPEND_%d' % idep] = b['name']
                     idep = idep + 1
@@ -249,7 +250,7 @@ stop = '2014-01-10T00:00:00.000Z'
 parameters = ''
 '''
 
-# '''
+'''
 # https://jfaden.net/HapiServerDemo/hapi/info?id=specBins.ref
 # uses common reference to the bins object
 server = 'https://jfaden.net/HapiServerDemo/hapi'
@@ -257,8 +258,17 @@ dataset = 'specBins.ref'
 start = '2016-001T00:00:00.000Z'
 stop = '2016-001T24:00:00.000Z'
 parameters = ''
-# '''
+'''
 
+# '''
+# https://jfaden.net/HapiServerDemo/hapi/info?id=specBins.ref
+# uses common reference to the bins object
+server = 'https://jfaden.net/HapiServerDemo/hapi'
+dataset = 'specBins.ref'
+start = '2016-001T00:00:00.000Z'
+stop = '2016-001T24:00:00.000Z'
+parameters = 'counts,flux'
+# '''
 '''
 print(calculate_format_str('2000'))
 print(calculate_format_str('2000003'))
