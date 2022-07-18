@@ -5,7 +5,6 @@ import re
 import spacepy.pycdf
 import hapiclient
 
-
 # frompyfunc
 # numpy.vectorize
 # ticktock
@@ -145,17 +144,6 @@ def handle_bins(cdf, name, bins):
         cdf[name].attrs['DELTA_PLUS_VAR'] = name + 'DeltaPlus'
         cdf[name].attrs['DELTA_MINUS_VAR'] = name + 'DeltaMinus'
 
-
-# this goes away to avoid dependence.  Jon V says CDFFactory.fromHapi()
-def to_CDF(server, dataset, parameters, start, stop, cdfname):
-    """
-    Convenient method for reading from HAPI server into CDF file.  This will probably go away.
-    """
-    opts = {'logging': True}
-    hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
-    to_CDF(hapidata, cdfname)
-
-
 def to_CDF(hapidata, cdfname):
     """Reformat the response from the Python hapiclient to the CDF.
 
@@ -214,92 +202,3 @@ def to_CDF(hapidata, cdfname):
 
     cdf.close()
 
-
-'''
-server = 'https://cdaweb.gsfc.nasa.gov/hapi'
-dataset = 'OMNI2_H0_MRG1HR'
-start = '2003-09-01T00:00:00'
-stop = '2003-12-01T00:00:00'
-parameters = 'KP1800,DST1800'
-'''
-
-'''
-server = 'https://jfaden.net/HapiServerDemo/hapi'
-dataset = 'Iowa City Conditions'
-start = '2022-06-20T00:00:00.000Z'
-stop = '2022-06-28T00:00:00.000Z'
-parameters = 'Temperature,WindSpeed'
-'''
-
-'''
-# https://jfaden.net/HapiServerDemo/hapi/info?id=Spectrum
-server = 'https://jfaden.net/HapiServerDemo/hapi'
-dataset = 'Spectrum'
-start = '2016-01-01T00:00:00.000Z'
-stop = '2016-01-01T03:00:00.000Z'
-parameters = ''
-'''
-
-'''
-# https://jfaden.net/HapiServerDemo/hapi/info?id=SpectrogramRank2
-# rank 2 spectrogram must be sliced to view
-server = 'https://jfaden.net/HapiServerDemo/hapi'
-dataset = 'SpectrogramRank2'
-start = '2014-01-09T00:00:00.000Z'
-stop = '2014-01-10T00:00:00.000Z'
-parameters = ''
-'''
-
-'''
-# https://jfaden.net/HapiServerDemo/hapi/info?id=specBins.ref
-# uses common reference to the bins object
-server = 'https://jfaden.net/HapiServerDemo/hapi'
-dataset = 'specBins.ref'
-start = '2016-001T00:00:00.000Z'
-stop = '2016-001T24:00:00.000Z'
-parameters = ''
-'''
-
-# '''
-# https://jfaden.net/HapiServerDemo/hapi/info?id=specBins.ref
-# uses common reference to the bins object
-server = 'https://jfaden.net/HapiServerDemo/hapi'
-dataset = 'specBins.ref'
-start = '2016-001T00:00:00.000Z'
-stop = '2016-001T24:00:00.000Z'
-parameters = 'counts,flux'
-# '''
-'''
-print(calculate_format_str('2000'))
-print(calculate_format_str('2000003'))
-print(calculate_format_str('2000-003'))
-print(calculate_format_str('20001203'))
-print(calculate_format_str('2000-12-03'))
-print(calculate_format_str('2000-12-03Z'))
-print(calculate_format_str('2000-12-03T04'))
-print(calculate_format_str('2000-12-03T04Z'))
-print(calculate_format_str('2000-12-03T0405'))
-print(calculate_format_str('2000-12-03T0405Z'))
-print(calculate_format_str('2000-12-03T040506'))
-print(calculate_format_str('2000-12-03T03:04:05'))
-print(calculate_format_str('2000-12-03T04:05:06.007'))
-print(calculate_format_str('2000-12-03T04:05:06.007008'))
-'''
-
-#import hapiclient.hapitime
-#print( hapiclient.hapitime.hapitime_format_str('2004') )
-#print( hapiclient.hapitime.hapitime_format_str('2004-140T03:04') )
-
-# cdf = spacepy.pycdf.CDF(cdfname, create=True)
-# print(cdf)
-
-filename = '/tmp/fromHapiToCDF.cdf'
-if os.path.exists(filename):
-    print('deleting {}'.format(filename))
-    os.remove(filename)
-
-opts = {'logging': True}
-hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
-to_CDF(hapidata, filename)
-
-print('wrote {}'.format(filename))
