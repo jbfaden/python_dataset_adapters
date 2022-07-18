@@ -49,4 +49,4 @@ print(cdf3)
 print(type(cdf3['Time']))
 print('---------')
 import spacepy.datamodel as dm
-dm.toJSONheadedASCII( '/tmp/jbf/fromHapiToCDFTest.txt', cdf3, depend0='Time', order=['Time','sw_v_gse'] )
+dm.toJSONheadedASCII( '/tmp/jbf/fromHapiToCDFTest.txt', cdf3 )
