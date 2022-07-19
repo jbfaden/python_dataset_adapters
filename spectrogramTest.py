@@ -1,3 +1,9 @@
+import fromHapiToCDF
+import fromHapiToSpaceData
+
+import os
+import hapiclient
+import spacepy.pycdf
 
 '''
 # https://jfaden.net/HapiServerDemo/hapi/info?id=specBins.ref
@@ -26,13 +32,6 @@ start = '2008-03-30Z'
 stop = '2008-03-31Z'
 parameters = 'ELECTRON_DIFFERENTIAL_ENERGY_FLUX'
 
-import fromHapiToCDF
-import fromHapiToSpaceData
-
-import os
-import hapiclient
-import spacepy.pycdf
-
 filename = '/home/jbf/tmp/202207/hapi/po_h0_hyd_20080330_v01.cdf'
 
 opts = {'logging': True, 'format': 'csv', 'usecache': True}
@@ -44,10 +43,8 @@ print(cdf2)
 print(type(cdf2['EPOCH']))
 print('---------')
 
-cdf3 = fromHapiToSpaceData.to_SpaceData(hapidata)
-print('--cdf3---')
-print(cdf3)
-print(type(cdf3['Time']))
-print('---------')
+simpleSpectrogram = fromHapiToSpaceData.to_SpaceData(hapidata)
 import spacepy.datamodel as dm
-dm.toJSONheadedASCII( '/tmp/jbf/spectrogram.txt', cdf3 )
+dm.toJSONheadedASCII( '/tmp/jbf/simpleSpectrogram.txt', simpleSpectrogram )
+
+print( '-----------------------------------------------' )
