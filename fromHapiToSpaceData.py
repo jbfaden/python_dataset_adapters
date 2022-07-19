@@ -104,7 +104,6 @@ def convert_times(isotime_array):
     form = calculate_format_str(isotime_array[0].decode('ascii'))
     return [datetime.datetime.strptime(isotime.decode('ascii'), form) for isotime in isotime_array]
 
-
 def handle_bins(data, name, bins):
     """
     Add non-time-varying bins variable
@@ -128,7 +127,7 @@ def handle_bins(data, name, bins):
     if 'centers' not in locals():
         centers = [a[0] + (a[1] - a[0]) / 2 for a in ranges]
 
-    data[name] = centers
+    data[name] = datamodel.dmarray(input_array=centers)
     data[name].attrs['UNITS'] = bins['units']
     data[name].attrs['VAR_TYPE'] = 'support_data'
 
@@ -200,7 +199,6 @@ def to_SpaceData(hapidata):
 
         if 'description' in m:
             result[name].attrs['CATDESC'] = m['description']
-    result.attrs = {}
-    result.attrs['CreateDate'] = datetime.datetime.now()
+    result.attrs = {'CreateDate': datetime.datetime.now()}
 
     return result
