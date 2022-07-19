@@ -6,6 +6,7 @@ import spacepy.pycdf
 import spacepy.datamodel as datamodel
 import hapiclient
 
+
 # frompyfunc
 # numpy.vectorize
 # ticktock
@@ -118,7 +119,11 @@ def handle_bins(data, name, bins):
         the "bins" node of the HAPI response
     """
     if 'centers' in bins:
-        centers = [float(v) for v in bins['centers']]
+        o = bins['centers']
+        if type(o) != str:  # string is just a reference to another variable
+            centers = [float(v) for v in bins['centers']]
+        else:
+            return
     elif 'ranges' in bins:
         ranges = bins['ranges']
     else:
@@ -174,11 +179,11 @@ def to_SpaceData(hapidata):
         m = meta['parameters'][i]
         if i == 0:
             d = convert_times(data[m['name']])
-            result[name] = datamodel.dmarray( d )
+            result[name] = datamodel.dmarray(d)
             result[name].attrs['VAR_TYPE'] = 'support_data'
         else:
             d = data[name]
-            result[name] = datamodel.dmarray( d )
+            result[name] = datamodel.dmarray(d)
             v = result[name]
             if 'bins' in m:
                 bins = m['bins']
@@ -199,6 +204,7 @@ def to_SpaceData(hapidata):
 
         if 'description' in m:
             result[name].attrs['CATDESC'] = m['description']
+
     result.attrs = {'CreateDate': datetime.datetime.now()}
 
     return result
