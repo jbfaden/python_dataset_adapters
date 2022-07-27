@@ -1,109 +1,12 @@
 import os.path
 import datetime
 import re
+import time
 
 import spacepy.pycdf
 import spacepy.datamodel as datamodel
 import hapiclient
-
-
-# frompyfunc
-# numpy.vectorize
-# ticktock
-# foo = numpy.vectorize(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d'))
-# foo( '2020-02-02','2020-02-03')
-# { x(i) : for i in iis } dictionary comprehension
-# https://github.com/spacepy/spacepy/issues/523
-
-def calculate_format_str(isotime):
-    """
-    Given an example time, return the format string which used with datetime.datetime.strptime
-    will parse the isotime strings to datetimes.
-
-    Parameters
-    ----------
-    isotime : str
-        a HAPI isotime
-
-    Return
-    ------
-    str
-        a format string for datetime.datetime.strptime
-    """
-    if isotime[-1] == 'Z':
-        isotime = isotime[0:-1]
-        zstr = 'Z'
-    else:
-        zstr = ''
-
-    datelen = isotime.find('T')
-    if datelen == -1:
-        datelen = len(isotime)
-
-    if datelen == 4:
-        form = '%Y'
-    elif datelen == 6:
-        form = '%Y%m'
-    elif datelen == 7:
-        if isotime[4] == '-':
-            form = '%Y-%m'
-        else:
-            form = '%Y%j'
-    elif datelen == 8:
-        if isotime[4] == '-':
-            form = '%Y-%j'
-        else:
-            form = '%Y%m%d'
-    elif datelen == 10:
-        form = '%Y-%m-%d'
-    else:
-        raise ValueError('date cannot have %d characters: %s' % (datelen, isotime))
-
-    formForLength = {
-        2: "%H",
-        4: '%H%M',
-        5: '%H:%M',
-        6: '%H%M%S',
-        8: '%H:%M:%S'
-        # note case for 10 and up below
-    }
-
-    timelen = len(isotime) - datelen - 1
-
-    if timelen > 9:
-        timeform = "%H:%M:%S.%f"
-    elif timelen < 1:
-        timeform = ""
-    else:
-        timeform = formForLength[timelen]
-
-    if timeform is None:
-        raise ValueError("time cannot have {:d} characters: {:s}".format(datelen, isotime))
-    elif len(timeform) == 0:
-        return "{}{}".format(form, zstr)
-    else:
-        return "{}T{}{}".format(form, timeform, zstr)
-
-
-def convert_times(isotime_array):
-    """
-    Convert the times in the array of isotimes into datetime objects.
-
-    Parameters
-    ----------
-    isotimeArray : array of str
-        each element a HAPI isotime
-
-    Return
-    ------
-    array of str
-        a datetime object for each element
-    """
-    if len(isotime_array) == 0:
-        print('isotime_array has len 0')
-        return isotime_array  # raise ValueError('isotime array is empty')
-    form = calculate_format_str(isotime_array[0].decode('ascii'))
-    return [datetime.datetime.strptime(isotime.decode('ascii'), form) for isotime in isotime_array]
+import hapiclient.hapitime
 
 def handle_bins(data, name, bins):
     """
@@ -178,7 +81,7 @@ def to_SpaceData(hapidata):
         name = names[i]
         m = meta['parameters'][i]
         if i == 0:
-            d = convert_times(data[m['name']])
+            d = hapiclient.hapitime.hapitime2datetime(data[m['name']])
             result[name] = datamodel.dmarray(d)
             result[name].attrs['VAR_TYPE'] = 'support_data'
         else:
