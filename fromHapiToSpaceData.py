@@ -208,3 +208,4 @@ def to_SpaceData(hapidata):
     result.attrs = {'CreateDate': datetime.datetime.now()}
 
     return result
+
