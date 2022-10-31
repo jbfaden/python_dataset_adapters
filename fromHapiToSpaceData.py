@@ -29,6 +29,8 @@ def calculate_format_str(isotime):
     ------
     str
         a format string for datetime.datetime.strptime
+        
+    This will be deprecated because the Python HAPI client has its own method for handling times.
     """
     if isotime[-1] == 'Z':
         isotime = isotime[0:-1]
