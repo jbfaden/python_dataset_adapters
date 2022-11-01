@@ -1,4 +1,3 @@
-import fromHapiToCDF
 import fromHapiToSpaceData
 
 import os
@@ -25,14 +24,18 @@ stop = '2016-07_28T23:20:00.000Z'
 parameters = ''
 '''
 
+outd = '/home/jbf/tmp/202207/'
+if not os.path.exists(outd):
+    os.mkdir(outd)
+
 # vap+hapi:https://cdaweb.gsfc.nasa.gov/hapi?id=PO_H0_HYD&parameters=Time,ELECTRON_DIFFERENTIAL_ENERGY_FLUX&timerange=2008-03-30
 server = 'https://cdaweb.gsfc.nasa.gov/hapi'
 dataset = 'PO_H0_HYD'
-start = '2008-03-30Z'
+start = '2008-03-20Z'
 stop = '2008-03-31Z'
 parameters = 'ELECTRON_DIFFERENTIAL_ENERGY_FLUX'
 
-filename = '/home/jbf/tmp/202207/hapi/po_h0_hyd_20080330_v01.cdf'
+filename = outd + 'hapi/po_h0_hyd_20080330_v01.cdf'
 
 opts = {'logging': True, 'format': 'csv', 'usecache': True}
 hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
@@ -45,6 +48,7 @@ print('---------')
 
 simpleSpectrogram = fromHapiToSpaceData.to_SpaceData(hapidata)
 import spacepy.datamodel as dm
-dm.toJSONheadedASCII( '/tmp/jbf/simpleSpectrogram.txt', simpleSpectrogram )
 
-print( '-----------------------------------------------' )
+dm.toJSONheadedASCII(outd + 'simpleSpectrogram.txt', simpleSpectrogram)
+print('wrote to %s' % outd + 'simpleSpectrogram.txt')
+print('-----------------------------------------------')

@@ -36,7 +36,8 @@ def hapi_to_time_series(hapidata):
             if data.ndim > 2:
                 # Skip data with dimensions >= 3 and give user warning
                 warn_user(
-                    f'The variable "{var_key}" has been skipped because it has more than 2 dimensions, which is unsupported.')
+                    f'The variable "{var_key}" has been skipped because it has more than 2 dimensions,'
+                    ' which is unsupported.')
             elif data.ndim == 2:
                 for icol, col in enumerate(data.T):
                     df[var_key + f'_{icol}'] = col
@@ -49,25 +50,3 @@ def hapi_to_time_series(hapidata):
 
     return result
 
-# if False:
-#     # https://cdaweb.gsfc.nasa.gov/hapi/data?id=OMNI2_H0_MRG1HR&time.min=2022-01-01T00:00:00Z&time.max=2022-10-24T13:00:00Z&parameters=Time,Rot1800,KP1800,DST1800,AE1800
-#     server = 'https://cdaweb.gsfc.nasa.gov/hapi'
-#     dataset = 'OMNI2_H0_MRG1HR'
-#     start = '2022-01-01Z'
-#     stop = '2022-06-01Z'
-#     parameters = 'Time,Rot1800,KP1800,DST1800,AE1800'
-#     opts = {'logging': False, 'format': 'csv', 'usecache': True}
-#     hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
-#
-# if True:
-#     # https://cdaweb.gsfc.nasa.gov/hapi/data?id=AC_H0_MFI&time.min=2022-09-03T00:00:00Z&time.max=2022-09-03T23:59:47Z&parameters=Time,BGSM
-#     server = 'https://cdaweb.gsfc.nasa.gov/hapi'
-#     dataset = 'AC_H0_MFI'
-#     start = '2022-09-03Z'
-#     stop = '2022-09-04Z'
-#     parameters = 'Time,Magnitude,BGSM'
-#     opts = {'logging': False, 'format': 'csv', 'usecache': True}
-#     hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
-#
-# ts = hapi_to_time_series(hapidata)
-# print(ts)

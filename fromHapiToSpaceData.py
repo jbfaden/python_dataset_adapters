@@ -1,11 +1,8 @@
-import os.path
 import datetime
 import re
-import time
 
-import spacepy.pycdf
 import spacepy.datamodel as datamodel
-import hapiclient
+from hapiclient.hapitime import hapitime2datetime
 
 
 # frompyfunc
@@ -182,7 +179,7 @@ def to_SpaceData(hapidata):
         name = names[i]
         m = meta['parameters'][i]
         if i == 0:
-            d = convert_times(data[m['name']])
+            d = hapitime2datetime(data[m['name']])
             result[name] = datamodel.dmarray(d)
             result[name].attrs['VAR_TYPE'] = 'support_data'
         else:
