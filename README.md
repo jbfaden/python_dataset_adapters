@@ -8,6 +8,7 @@ SpacePy needs the CDF_LIB CDF library, because it uses native code.  The environ
 variable CDF_LIB should be set to the directory which contains the file "libcdf.so"
 on Unix systems, Windows will be different.
 
+Also a number of packages are needed.  Here they are:
 * pip install hapiclient
 * pip install spacepy
 * pip install sunpy
