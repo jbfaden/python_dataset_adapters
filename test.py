@@ -118,6 +118,7 @@ class Test(unittest.TestCase):
         print('-----------------------------------------------')
 
     def test_from_hapi_to_space_py_bins(self):
+        """Bins specification used"""
         filename = prepare_output_file('spectrogramBins.txt')
         # vap+hapi:https://jfaden.net/HapiServerDemo/hapi?id=specBins&timerange=2016-01-01+0:00+to+23:59
         server = 'https://jfaden.net/HapiServerDemo/hapi'
@@ -129,6 +130,20 @@ class Test(unittest.TestCase):
         hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
         spaceData = fromHapiToSpaceData.to_SpaceData(hapidata)
         print( spaceData )
+
+    def test_from_hapi_to_space_py_bins(self):
+        """demo use of HAPI 3.0 reference.  Note that hapiclient.hapi resolves the reference for this
+        code."""
+        # vap+hapi:https://jfaden.net/HapiServerDemo/hapi?id=specBins.ref&timerange=2016-01-01+0:00+to+23:59
+        server = 'https://jfaden.net/HapiServerDemo/hapi'
+        dataset = 'specBins'
+        start = '2016-01-01T00:00'
+        stop = '2016-01-01T23:59'
+        parameters = ''
+        opts = {'logging': True, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        spaceData = fromHapiToSpaceData.to_SpaceData(hapidata)
+        print(spaceData)
 
     def test_hapi_to_sunpy_scalars(self):
         """Reads scalars from HAPI server and creates SunPy TimeSeries"""
