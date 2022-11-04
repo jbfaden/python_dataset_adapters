@@ -87,13 +87,13 @@ class Test(unittest.TestCase):
         opts = {'logging': False, 'format': 'csv'}
         hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
 
-        cdf = fromHapiToSpaceData.to_SpaceData(hapidata)
-        print('--cdf---')
-        print(cdf)
-        print(type(cdf['Time']))
+        spacedata = fromHapiToSpaceData.to_SpaceData(hapidata)
+        print('--spacedata---')
+        print(spacedata)
+        print(type(spacedata['Time']))
         print('---------')
 
-        dm.toJSONheadedASCII(filename, cdf)
+        dm.toJSONheadedASCII(filename, spacedata)
         print('wrote ' + filename)
 
     def test_from_hapi_to_space_py_time_varying_channels(self):
