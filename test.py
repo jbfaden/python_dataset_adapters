@@ -1,6 +1,7 @@
 import unittest
 import os
 
+import spacepy.datamodel as dm
 from fromHapiToSunPy import hapi_to_time_series
 import fromHapiToCDF
 import fromHapiToSpaceData
@@ -37,6 +38,42 @@ class Test(unittest.TestCase):
         fromHapiToCDF.to_CDF(hapidata, filename)
         print('Wrote ' + filename)
 
+    def test_calculate_format_str(self):
+        tests = {'2000-02-02T02:02:02.000Z': '%Y-%m-%dT%H:%M:%S.%fZ',
+                 '2000-002T02:02Z': '%Y-%jT%H:%MZ',
+                 '2000-002': '%Y-%j',
+                 '99': '%y',
+                 '2000-001T0:00:00': '%Y-%jT%H:%M:%S',
+                 '2000': '%Y',
+                 '200001': '%Y%m',
+                 '2000-01': '%Y-%m',
+                 '2000001': '%Y%j',
+                 '20000202': '%Y%m%d',
+                 '2000-02-02': '%Y-%m-%d',
+                 '2000-002T02': '%Y-%jT%H'
+                 }
+        for k in tests:
+            try:
+                fmt = fromHapiToSpaceData.calculate_format_str(k)
+                print('fmt: ', fmt)
+                assert fmt == tests[k]
+            except:
+                print('cannot have: '+k)
+
+    def test_convert_times(self):
+        server = 'https://jfaden.net/HapiServerDemo/hapi'
+        dataset = 'poolTemperature'
+        start = '2021-05-01Z'
+        stop = '2021-05-02Z'
+        parameters = ''
+        opts = {'logging': False, 'format': 'csv'}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        data, meta = hapidata
+        t = meta['parameters'][0]
+        isotimes = data[t['name']]
+        print(fromHapiToSpaceData.convert_times(isotimes)[0])
+        print(fromHapiToSpaceData.convert_times([]))
+
     def test_from_hapi_to_space_py(self):
         """Reads data from HAPI and puts it into a SpacePy SpaceData"""
         filename = prepare_output_file('fromHapiToCDFTest.txt')
@@ -55,7 +92,6 @@ class Test(unittest.TestCase):
         print(cdf3)
         print(type(cdf3['Time']))
         print('---------')
-        import spacepy.datamodel as dm
 
         dm.toJSONheadedASCII(filename, cdf3)
         print('wrote ' + filename)
@@ -81,6 +117,19 @@ class Test(unittest.TestCase):
         print('wrote to %s' % filename)
         print('-----------------------------------------------')
 
+    def test_from_hapi_to_space_py_bins(self):
+        filename = prepare_output_file('spectrogramBins.txt')
+        # vap+hapi:https://jfaden.net/HapiServerDemo/hapi?id=specBins&timerange=2016-01-01+0:00+to+23:59
+        server = 'https://jfaden.net/HapiServerDemo/hapi'
+        dataset = 'specBins'
+        start = '2016-01-01T00:00'
+        stop = '2016-01-01T23:59'
+        parameters = ''
+        opts = {'logging': True, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        spaceData = fromHapiToSpaceData.to_SpaceData(hapidata)
+        print( spaceData )
+
     def test_hapi_to_sunpy_scalars(self):
         """Reads scalars from HAPI server and creates SunPy TimeSeries"""
         server = 'https://cdaweb.gsfc.nasa.gov/hapi'
@@ -91,10 +140,9 @@ class Test(unittest.TestCase):
         opts = {'logging': False, 'format': 'csv', 'usecache': True}
         hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
         ts = hapi_to_time_series(hapidata)
-        print( ts )
-        print( ts.columns )
+        print(ts)
+        print(ts.columns)
         # TODO: how does one get the metadata to know what the fill value is?
-
 
     def test_hapi_to_sunpy_vectors(self):
         """Reads scalar and vector from HAPI server and creates SunPy TimeSeries"""
