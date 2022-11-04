@@ -1,47 +1,22 @@
 import unittest
+import os
 
 from fromHapiToSunPy import hapi_to_time_series
 import fromHapiToCDF
 import fromHapiToSpaceData
-import os
 import hapiclient
 
 
-class Test( unittest.TestCase ):
-    def test_hapi_to_time_series_scalars(self):
-        # https://cdaweb.gsfc.nasa.gov/hapi/data?id=OMNI2_H0_MRG1HR&time.min=2022-01-01T00:00:00Z&time.max=2022-10-24T13:00:00Z&parameters=Time,Rot1800,KP1800,DST1800,AE1800
-        server = 'https://cdaweb.gsfc.nasa.gov/hapi'
-        dataset = 'OMNI2_H0_MRG1HR'
-        start = '2022-01-01Z'
-        stop = '2022-06-01Z'
-        parameters = 'Time,Rot1800,KP1800,DST1800,AE1800'
-        opts = {'logging': False, 'format': 'csv', 'usecache': True}
-        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
-        print( hapi_to_time_series(hapidata) )
-
-    def test_hapi_to_time_series_vectors(self):
-        # https://cdaweb.gsfc.nasa.gov/hapi/data?id=AC_H0_MFI&time.min=2022-09-03T00:00:00Z&time.max=2022-09-03T23:59:47Z&parameters=Time,BGSM
-        server = 'https://cdaweb.gsfc.nasa.gov/hapi'
-        dataset = 'AC_H0_MFI'
-        start = '2022-09-03Z'
-        stop = '2022-09-04Z'
-        parameters = 'Time,Magnitude,BGSM'
-        opts = {'logging': False, 'format': 'csv', 'usecache': True}
-        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
-        print( hapi_to_time_series(hapidata) )
-
-    def test_fromHapiToCDF(self):
-        # '''
-        # vap+hapi:http://amda.irap.omp.eu/service/hapi?id=ace-swe-all&parameters=Time,sw_v_gse&timerange=2021-01-17
-        # uses common reference to the bins object
+class Test(unittest.TestCase):
+    def test_from_hapi_to_cdf(self):
+        """Reads data from HAPI and puts it into a CDF file at /tmp/fromHapiToCdf.cdf"""
         server = 'http://amda.irap.omp.eu/service/hapi'
         dataset = 'ace-swe-all'
         start = '2021-01-17T00:00:00Z'
         stop = '2021-01-17T23:59:47Z'
         parameters = 'sw_v_gse'
-        # '''
 
-        filename = '/tmp/fromHapiToCDF.cdf'
+        filename = '/tmp/fromHapiToCdf.cdf'
         if os.path.exists(filename):
             print('deleting {}'.format(filename))
             os.remove(filename)
@@ -49,9 +24,10 @@ class Test( unittest.TestCase ):
         opts = {'logging': False, 'format': 'csv'}
         hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
         fromHapiToCDF.to_CDF(hapidata, filename)
-        print( 'Wrote '+filename )
+        print('Wrote ' + filename)
 
-    def test_fromHapiToSpacePy(self):
+    def test_from_hapi_to_space_py(self):
+        """Reads data from HAPI and puts it into a SpacePy SpaceData"""
         server = 'http://amda.irap.omp.eu/service/hapi'
         dataset = 'ace-swe-all'
         start = '2021-01-17T00:00:00Z'
@@ -73,7 +49,54 @@ class Test( unittest.TestCase ):
             print('deleting {}'.format(filename))
             os.remove(filename)
         dm.toJSONheadedASCII(filename, cdf3)
-        print('wrote '+filename)
+        print('wrote ' + filename)
+
+    def test_hapi_to_sunpy_scalars(self):
+        """Reads scalars from HAPI server and creates SunPy TimeSeries"""
+        server = 'https://cdaweb.gsfc.nasa.gov/hapi'
+        dataset = 'OMNI2_H0_MRG1HR'
+        start = '2022-01-01Z'
+        stop = '2022-06-01Z'
+        parameters = 'Time,Rot1800,KP1800,DST1800,AE1800'
+        opts = {'logging': False, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        print(hapi_to_time_series(hapidata))
+
+    def test_hapi_to_sunpy_vectors(self):
+        """Reads scalar and vector from HAPI server and creates SunPy TimeSeries"""
+        server = 'https://cdaweb.gsfc.nasa.gov/hapi'
+        dataset = 'AC_H0_MFI'
+        start = '2022-09-03Z'
+        stop = '2022-09-04Z'
+        parameters = 'Time,Magnitude,BGSM'
+        opts = {'logging': False, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        print(hapi_to_time_series(hapidata))
+
+    def test_hapi_to_time_series_spec_bins(self):
+        """Reads spectrogram (data.ndim=2) from HAPI server and creates SunPy TimeSeries"""
+        # https://jfaden.net/HapiServerDemo/hapi/info?id=specBins.ref
+        server = 'https://jfaden.net/HapiServerDemo/hapi'
+        dataset = 'specBins.ref'
+        start = '2016-001T00:00:00.000Z'
+        stop = '2016-001T24:00:00.000Z'
+        parameters = ''
+        opts = {'logging': False, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        print(hapi_to_time_series(hapidata))
+
+    def test_hapi_to_time_series_ndim_3_data(self):
+        """Reads data from HAPI server with ndim=3 and demos that it cannot be used."""
+        server = 'https://jfaden.net/HapiServerDemo/hapi'
+        dataset = 'SpectrogramRank2'
+        start = '2014-01-09T00:00:00.000Z'
+        stop = '2014-01-10T00:00:00.000Z'
+        parameters = ''
+        opts = {'logging': False, 'format': 'csv', 'usecache': True}
+        data1, meta1 = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        print(type(data1[meta1['parameters'][0]['name']]))
+        print(hapi_to_time_series((data1, meta1)))
+
 
 if __name__ == '__main__':
     unittest.main()
