@@ -13,3 +13,7 @@ Also a number of packages are needed.  Here they are:
 * pip install spacepy
 * pip install sunpy
 * pip install h5netcdf
+
+# References
+The SunPy adapter was created using the CDF adapter as a reference, see
+https://github.com/sunpy/sunpy/blob/main/sunpy/io/cdf.py
