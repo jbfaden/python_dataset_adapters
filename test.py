@@ -7,7 +7,22 @@ import fromHapiToSpaceData
 import hapiclient
 
 
+def prepare_output_file(name):
+    """create temporary directory and filename for testing.  This may create
+    the directory and will delete the file if an old one is found within the
+    directory."""
+    outd = '/tmp/python_dataset_adapters/'
+    if not os.path.exists(outd):
+        os.mkdir(outd)
+    filename = outd + name
+    if os.path.exists(filename):
+        print('deleting {}'.format(filename))
+        os.remove(filename)
+    return filename
+
+
 class Test(unittest.TestCase):
+
     def test_from_hapi_to_cdf(self):
         """Reads data from HAPI and puts it into a CDF file at /tmp/fromHapiToCdf.cdf"""
         server = 'http://amda.irap.omp.eu/service/hapi'
@@ -16,11 +31,7 @@ class Test(unittest.TestCase):
         stop = '2021-01-17T23:59:47Z'
         parameters = 'sw_v_gse'
 
-        filename = '/tmp/fromHapiToCdf.cdf'
-        if os.path.exists(filename):
-            print('deleting {}'.format(filename))
-            os.remove(filename)
-
+        filename = prepare_output_file('fromHapiToCdf.cdf')
         opts = {'logging': False, 'format': 'csv'}
         hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
         fromHapiToCDF.to_CDF(hapidata, filename)
@@ -28,6 +39,8 @@ class Test(unittest.TestCase):
 
     def test_from_hapi_to_space_py(self):
         """Reads data from HAPI and puts it into a SpacePy SpaceData"""
+        filename = prepare_output_file('fromHapiToCDFTest.txt')
+
         server = 'http://amda.irap.omp.eu/service/hapi'
         dataset = 'ace-swe-all'
         start = '2021-01-17T00:00:00Z'
@@ -44,12 +57,29 @@ class Test(unittest.TestCase):
         print('---------')
         import spacepy.datamodel as dm
 
-        filename = '/tmp/fromHapiToCDFTest.txt'
-        if os.path.exists(filename):
-            print('deleting {}'.format(filename))
-            os.remove(filename)
         dm.toJSONheadedASCII(filename, cdf3)
         print('wrote ' + filename)
+
+    def test_from_hapi_to_space_py_time_varying_channels(self):
+        filename = prepare_output_file('complexSpectrogram.txt')
+
+        # vap+hapi:https://jfaden.net/HapiServerDemo/hapi?id=SpectrumTimeVaryingChannels&parameters=Spectra&timerange=2016-07-28+22:00+to+24:00
+        server = 'https://jfaden.net/HapiServerDemo/hapi'
+        dataset = 'SpectrumTimeVaryingChannels'
+        start = '2016-07-28T22:00'
+        stop = '2016-07-28T24:00'
+        parameters = ''
+
+        opts = {'logging': True, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+
+        complexSpectrogram = fromHapiToSpaceData.to_SpaceData(hapidata)
+        import spacepy.datamodel as dm
+
+        dm.toJSONheadedASCII(filename, complexSpectrogram)
+
+        print('wrote to %s' % filename)
+        print('-----------------------------------------------')
 
     def test_hapi_to_sunpy_scalars(self):
         """Reads scalars from HAPI server and creates SunPy TimeSeries"""
