@@ -92,7 +92,8 @@ class Test(unittest.TestCase):
         hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
         ts = hapi_to_time_series(hapidata)
         print( ts )
-        # TODO: how does one get the metadata?
+        print( ts.columns )
+        # TODO: how does one get the metadata to know what the fill value is?
 
 
     def test_hapi_to_sunpy_vectors(self):
