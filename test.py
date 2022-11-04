@@ -90,7 +90,10 @@ class Test(unittest.TestCase):
         parameters = 'Time,Rot1800,KP1800,DST1800,AE1800'
         opts = {'logging': False, 'format': 'csv', 'usecache': True}
         hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
-        print(hapi_to_time_series(hapidata))
+        ts = hapi_to_time_series(hapidata)
+        print( ts )
+        # TODO: how does one get the metadata?
+
 
     def test_hapi_to_sunpy_vectors(self):
         """Reads scalar and vector from HAPI server and creates SunPy TimeSeries"""
