@@ -58,7 +58,13 @@ class Test(unittest.TestCase):
                 print('fmt: ', fmt)
                 assert fmt == tests[k]
             except:
-                print('cannot have: '+k)
+                print('cannot have: ' + k)
+
+        with self.assertRaises(ValueError):
+            fmt = fromHapiToSpaceData.calculate_format_str('20129')
+
+        with self.assertRaises(ValueError):
+            fmt = fromHapiToSpaceData.calculate_format_str('2012-01-01T123')
 
     def test_convert_times(self):
         server = 'https://jfaden.net/HapiServerDemo/hapi'
@@ -129,12 +135,12 @@ class Test(unittest.TestCase):
         opts = {'logging': True, 'format': 'csv', 'usecache': True}
         hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
         spaceData = fromHapiToSpaceData.to_SpaceData(hapidata)
-        print( spaceData )
+        print(len(spaceData))
 
-    def test_from_hapi_to_space_py_bins(self):
-        """demo use of HAPI 3.0 reference.  Note that hapiclient.hapi resolves the reference for this
-        code."""
-        # vap+hapi:https://jfaden.net/HapiServerDemo/hapi?id=specBins.ref&timerange=2016-01-01+0:00+to+23:59
+    def test_from_hapi_to_cdf_bins(self):
+        """Bins specification used"""
+        filename = prepare_output_file('spectrogramBins.txt')
+        # vap+hapi:https://jfaden.net/HapiServerDemo/hapi?id=specBins&timerange=2016-01-01+0:00+to+23:59
         server = 'https://jfaden.net/HapiServerDemo/hapi'
         dataset = 'specBins'
         start = '2016-01-01T00:00'
@@ -142,8 +148,82 @@ class Test(unittest.TestCase):
         parameters = ''
         opts = {'logging': True, 'format': 'csv', 'usecache': True}
         hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        fln = prepare_output_file('fromHapiToCdfBins.cdf')
+        fromHapiToCDF.to_CDF(hapidata, fln)
+        print(fln)
+
+    def test_from_hapi_to_cdf_bins_centers(self):
+        """demo use of HAPI 3.0 reference.  Note that hapiclient.hapi resolves the reference for this
+        code."""
+        # vap+hapi:https://jfaden.net/HapiServerDemo/hapi?id=WFR_E_B&timerange=2017-02-09+0:00+to+23:59
+        server = 'https://jfaden.net/HapiServerDemo/hapi'
+        dataset = 'WFR_E_B'
+        start = '2017-02-09T0:00'
+        stop = '2017-02-09T23:00'
+        parameters = ''
+        opts = {'logging': True, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        fln = prepare_output_file('fromHapiToCdfBinsCenters.cdf')
+        fromHapiToCDF.to_CDF(hapidata, fln)
+        print(fln)
+
+    def test_from_hapi_to_cdf_description(self):
+        """demo use of HAPI 3.0 reference.  Note that hapiclient.hapi resolves the reference for this
+        code."""
+        # vap+hapi:https://jfaden.net/HapiServerDemo/hapi?id=poolTemperature&timerange=2021-05-01
+        server = 'https://jfaden.net/HapiServerDemo/hapi'
+        dataset = 'poolTemperature'
+        start = '2021-05-01T0:00'
+        stop = '2021-05-01T12:00'
+        parameters = ''
+        opts = {'logging': True, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        fln = prepare_output_file('fromHapiToCdfDescription.cdf')
+        fromHapiToCDF.to_CDF(hapidata, fln)
+        print(fln)
+
+    def test_from_hapi_to_space_py_bins_centers(self):
+        """demo use of HAPI 3.0 reference.  Note that hapiclient.hapi resolves the reference for this
+        code."""
+        # vap+hapi:https://jfaden.net/HapiServerDemo/hapi?id=WFR_E_B&timerange=2017-02-09+0:00+to+23:59
+        server = 'https://jfaden.net/HapiServerDemo/hapi'
+        dataset = 'WFR_E_B'
+        start = '2017-02-09T0:00'
+        stop = '2017-02-09T23:00'
+        parameters = ''
+        opts = {'logging': True, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
         spaceData = fromHapiToSpaceData.to_SpaceData(hapidata)
-        print(spaceData)
+        print(len(spaceData))
+
+    def test_from_hapi_to_cdf_bins_ref(self):
+        """demo use of HAPI 3.0 reference.  Note that hapiclient.hapi resolves the reference for this
+        code."""
+        # vap+hapi:https://jfaden.net/HapiServerDemo/hapi?id=specBins.ref&parameters=Time,counts&timerange=2016-01-01+0:00+to+23:59
+        server = 'https://jfaden.net/HapiServerDemo/hapi'
+        dataset = 'specBins.ref'
+        start = '2016-01-01T0:00'
+        stop = '2016-01-01T23:59'
+        parameters = ''
+        opts = {'logging': True, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        filename = prepare_output_file('fromHapiToCdf.cdf')
+        fromHapiToCDF.to_CDF(hapidata,filename)
+        print(filename)
+
+    def test_from_hapi_to_space_py_bins_ref(self):
+        """demo use of HAPI 3.0 reference.  Note that hapiclient.hapi resolves the reference for this
+        code."""
+        # vap+hapi:https://jfaden.net/HapiServerDemo/hapi?id=specBins.ref&parameters=Time,counts&timerange=2016-01-01+0:00+to+23:59
+        server = 'https://jfaden.net/HapiServerDemo/hapi'
+        dataset = 'specBins.ref'
+        start = '2016-01-01T0:00'
+        stop = '2016-01-01T23:59'
+        parameters = ''
+        opts = {'logging': True, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        spaceData = fromHapiToSpaceData.to_SpaceData(hapidata)
+        print(len(spaceData))
 
     def test_hapi_to_sunpy_scalars(self):
         """Reads scalars from HAPI server and creates SunPy TimeSeries"""
@@ -178,6 +258,18 @@ class Test(unittest.TestCase):
         start = '2016-001T00:00:00.000Z'
         stop = '2016-001T24:00:00.000Z'
         parameters = ''
+        opts = {'logging': False, 'format': 'csv', 'usecache': True}
+        hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
+        print(hapi_to_time_series(hapidata))
+
+    def test_hapi_to_time_series_units(self):
+        """Reads data where units are recognized"""
+        # https://jfaden.net/HapiServerDemo/hapi/info?id=specBins.ref
+        server = 'https://cdaweb.gsfc.nasa.gov/hapi'
+        dataset = 'OMNI_HRO2_1MIN'
+        start = '2021-01-05T00:00:00.000Z'
+        stop = '2021-01-06T01:00:00.000Z'
+        parameters = 'proton_density'
         opts = {'logging': False, 'format': 'csv', 'usecache': True}
         hapidata = hapiclient.hapi(server, dataset, parameters, start, stop, **opts)
         print(hapi_to_time_series(hapidata))
