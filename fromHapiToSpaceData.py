@@ -75,11 +75,12 @@ def calculate_format_str(isotime):
     elif timelen < 1:
         timeform = ""
     else:
-        timeform = formForLength[timelen]
+        try:
+            timeform = formForLength[timelen]
+        except KeyError:
+            raise ValueError("time cannot have {:d} characters: {:s}".format(datelen, isotime))
 
-    if timeform is None:
-        raise ValueError("time cannot have {:d} characters: {:s}".format(datelen, isotime))
-    elif len(timeform) == 0:
+    if len(timeform) == 0:
         return "{}{}".format(form, zstr)
     else:
         return "{}T{}{}".format(form, timeform, zstr)
@@ -108,7 +109,10 @@ import hapiclient.hapitime
 
 def handle_bins(data, name, bins):
     """
-    Add non-time-varying bins variable
+    Add non-time-varying bins variable.  The HAPI server will return either
+    centers or ranges, this is required, and the centers are either read in
+    or inferred as the average of the range.  When ranges are found, this will
+    be put into the SpaceData as DELTA_PLUS_VAR and DELTA_MINUS_VAR.
 
     Parameters
     ----------
@@ -125,10 +129,8 @@ def handle_bins(data, name, bins):
             centers = [float(v) for v in bins['centers']]
         else:
             return
-    elif 'ranges' in bins:
+    else:  # if 'ranges' in bins:
         ranges = bins['ranges']
-    else:
-        raise Exception('Not supported')
 
     if 'centers' not in locals():
         centers = [a[0] + (a[1] - a[0]) / 2 for a in ranges]
